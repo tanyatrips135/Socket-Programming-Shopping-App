@@ -127,7 +127,7 @@ class ShoppingClient:
             self.cart_tree.heading(col, text=col.capitalize())
         self.cart_tree.pack(fill=tk.BOTH, expand=True)
 
-        self.total_label = ttk.Label(frame, text="Total: $0.00", font=("Arial", 12))
+        self.total_label = ttk.Label(frame, text="Total: ₹0.00", font=("Arial", 12))
         self.total_label.pack(pady=5)
 
         button_frame = ttk.Frame(frame)
@@ -208,8 +208,8 @@ class ShoppingClient:
             price = float(item["price"])
             quantity = int(item["quantity"])
             total += price * quantity
-            self.cart_tree.insert("", "end", values=(item["id"], item["name"], quantity, f"${price:.2f}"))
-        self.total_label.config(text=f"Total: ${total:.2f}")
+            self.cart_tree.insert("", "end", values=(item["id"], item["name"], quantity, f"₹{price:.2f}"))
+        self.total_label.config(text=f"Total: ₹{total:.2f}")
 
     def handle_checkout(self):
         self.send({"action": "checkout", "username": self.username, "cart": self.cart})
