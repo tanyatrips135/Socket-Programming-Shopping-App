@@ -52,7 +52,7 @@ def init_db():
     cursor.execute("SELECT COUNT(*) FROM products")
     if cursor.fetchone()[0] == 0:
         cursor.execute(
-            "INSERT INTO products (name, price, stock) VALUES ('Apple', 1.2, 100), ('Banana', 0.5, 150)"
+            "INSERT INTO products (name, price, stock) VALUES ('Apple (1 kg)', 250, 100), ('Banana (1 kg)', 30, 150), ('Strawberry (200 gms)', 110, 150), ('Peach (500 gms)', 96, 150), ('Mango (1 kg)', 105, 150), ('Orange (1 kg)', 190, 150), ('Pineapple (1 pc)', 70, 150), ('Watermelon (1 pc)', 35, 150), ('Papaya (1 pc)', 70, 150)"
         )
 
     conn.commit()
