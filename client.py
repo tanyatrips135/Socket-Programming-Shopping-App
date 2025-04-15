@@ -7,7 +7,7 @@ import json
 class ShoppingClient:
     def __init__(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client.connect(("127.0.0.1", 9999))
+        self.client.connect(("127.0.0.1", 9998))
         self.username = None
         self.cart = []
         self.products = []
@@ -22,7 +22,6 @@ class ShoppingClient:
             self.show_reconnect_prompt()
         except Exception as e:
             messagebox.showerror("Send Error", str(e))
-
 
     def receive(self):
         try:
@@ -114,9 +113,7 @@ class ShoppingClient:
             self.products_tree.heading(col, text=col.capitalize())
         self.products_tree.pack(fill=tk.BOTH, expand=True)
 
-        ttk.Button(frame, text="Add to Cart", command=self.add_selected_to_cart).pack(
-            pady=10
-        )
+        ttk.Button(frame, text="Add to Cart", command=self.add_selected_to_cart).pack(pady=10)
 
     def setup_cart_frame(self):
         frame = ttk.Frame(self.cart_frame, padding=20)
@@ -133,7 +130,12 @@ class ShoppingClient:
         self.total_label = ttk.Label(frame, text="Total: $0.00", font=("Arial", 12))
         self.total_label.pack(pady=5)
 
-        ttk.Button(frame, text="Checkout", command=self.handle_checkout).pack(pady=10)
+        button_frame = ttk.Frame(frame)
+        button_frame.pack(pady=10)
+
+        ttk.Button(button_frame, text="Checkout", command=self.handle_checkout).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Remove Selected Item", command=self.remove_selected_from_cart).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="Clear Cart", command=self.clear_cart).pack(side=tk.LEFT, padx=5)
 
     def setup_history_frame(self):
         frame = ttk.Frame(self.history_frame, padding=20)
@@ -161,9 +163,7 @@ class ShoppingClient:
             self.load_history()
             self.notebook.select(2)
         else:
-            messagebox.showerror(
-                "Login Failed", response.get("message", "Unknown error")
-            )
+            messagebox.showerror("Login Failed", response.get("message", "Unknown error"))
 
     def handle_register(self):
         username = self.reg_username.get()
@@ -171,9 +171,7 @@ class ShoppingClient:
         self.send({"action": "register", "username": username, "password": password})
         response = self.receive()
         if response["status"] == "success":
-            messagebox.showinfo(
-                "Registered", "Registration successful! You can now log in."
-            )
+            messagebox.showinfo("Registered", "Registration successful! You can now log in.")
         else:
             messagebox.showerror("Error", response.get("message", "Unknown error"))
 
@@ -186,14 +184,8 @@ class ShoppingClient:
                 self.products_tree.delete(i)
             for product in self.products:
                 self.products_tree.insert(
-                    "",
-                    "end",
-                    values=(
-                        product["id"],
-                        product["name"],
-                        product["price"],
-                        product["stock"],
-                    ),
+                    "", "end",
+                    values=(product["id"], product["name"], product["price"], product["stock"])
                 )
 
     def add_selected_to_cart(self):
@@ -205,9 +197,7 @@ class ShoppingClient:
         quantity = simpledialog.askinteger("Quantity", f"How many {name}s?")
         if quantity is None:
             return
-        self.cart.append(
-            {"id": product_id, "name": name, "price": price, "quantity": quantity}
-        )
+        self.cart.append({"id": product_id, "name": name, "price": price, "quantity": quantity})
         self.update_cart_view()
 
     def update_cart_view(self):
@@ -218,27 +208,38 @@ class ShoppingClient:
             price = float(item["price"])
             quantity = int(item["quantity"])
             total += price * quantity
-            self.cart_tree.insert(
-                "", "end", values=(item["id"], item["name"], quantity, f"${price:.2f}")
-            )
+            self.cart_tree.insert("", "end", values=(item["id"], item["name"], quantity, f"${price:.2f}"))
         self.total_label.config(text=f"Total: ${total:.2f}")
 
     def handle_checkout(self):
         self.send({"action": "checkout", "username": self.username, "cart": self.cart})
         response = self.receive()
         if response["status"] == "success":
-            messagebox.showinfo(
-                "Thank You!", "Your order has been placed successfully!"
-            )
-
+            messagebox.showinfo("Thank You!", "Your order has been placed successfully!")
             self.cart.clear()
             self.update_cart_view()
             self.load_products()
             self.load_history()
-
             self.notebook.select(self.products_frame)
         else:
             messagebox.showerror("Error", response.get("message", "Unknown error"))
+
+    def remove_selected_from_cart(self):
+        selected = self.cart_tree.focus()
+        if not selected:
+            messagebox.showwarning("No Selection", "Please select an item to remove.")
+            return
+
+        item_values = self.cart_tree.item(selected)["values"]
+        product_id = item_values[0]
+
+        self.cart = [item for item in self.cart if item["id"] != product_id]
+        self.update_cart_view()
+
+    def clear_cart(self):
+        if messagebox.askyesno("Clear Cart", "Are you sure you want to clear your entire cart?"):
+            self.cart.clear()
+            self.update_cart_view()
 
     def load_history(self):
         self.send({"action": "get_history", "username": self.username})
@@ -248,15 +249,8 @@ class ShoppingClient:
                 self.history_tree.delete(i)
             for order in response["orders"]:
                 self.history_tree.insert(
-                    "",
-                    "end",
-                    values=(
-                        order["id"],
-                        order["product_id"],
-                        order["product_name"],
-                        order["quantity"],
-                        order["order_time"],
-                    ),
+                    "", "end",
+                    values=(order["id"], order["product_id"], order["product_name"], order["quantity"], order["order_time"])
                 )
 
     def show_reconnect_prompt(self):
@@ -270,7 +264,7 @@ class ShoppingClient:
         def attempt_reconnect():
             try:
                 self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.client.connect(("127.0.0.1", 9999))
+                self.client.connect(("127.0.0.1", 9998))
                 popup.destroy()
                 messagebox.showinfo("Reconnected", "Connection re-established. Please log in again.")
                 self.notebook.select(self.login_frame)

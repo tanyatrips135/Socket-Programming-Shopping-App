@@ -215,9 +215,9 @@ def send(sock, data):
 
 def start_server():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(("127.0.0.1", 9999))
+    server.bind(("127.0.0.1", 9998))
     server.listen(5)
-    print("[SERVER] Listening on port 9999")
+    print("[SERVER] Listening on port 9998")
     while True:
         client_sock, addr = server.accept()
         print(f"[SERVER] Connection from {addr}")
