@@ -312,7 +312,7 @@ def start_server(host="0.0.0.0", port=9998):
     try:
         while True:
             client_sock, addr = server.accept()
-            print(f"[SERVER] Connection from {addr}")
+            print(f"[SERVER] Connection from {addr} with socket number {client_sock.fileno()}")
             threading.Thread(target=handle_client, args=(client_sock, addr)).start()
     except KeyboardInterrupt:
         print("[SERVER] Shutting down...")

@@ -86,17 +86,6 @@ class ShoppingClient:
         self.server_host = server_host
         self.server_port = server_port
 
-        if not self.server_host or not self.server_port:
-            config = ServerConfigDialog(self.root)
-            if config.result:
-                self.server_host, self.server_port = config.result
-            else:
-                messagebox.showinfo(
-                    "Cancelled", "Connection cancelled. Exiting application."
-                )
-                self.root.destroy()
-                return
-
         try:
             self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.client.connect((self.server_host, self.server_port))
